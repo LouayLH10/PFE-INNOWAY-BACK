@@ -261,6 +261,7 @@ model Payment {
   invoiceId   Int
   invoice     Invoice  @relation(fields: [invoiceId], references: [id])
   paymentDate DateTime @default(now())
+  dueBalence  Float    @default(0)
 }
 
 model Message {

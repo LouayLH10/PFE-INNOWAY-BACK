@@ -19,9 +19,10 @@ import { DelivrableModule } from './modules/delivrable/delivrable.module';
 import { PaymentModule } from './modules/payment/payment.module';
 import { MessageModule } from './modules/message/message.module';
 import { MessageGateway } from './modules/message/message.gateway';
+import { PdfDashboardModule } from './modules/pdf-dashboard/pdf-dashboard.module';
 
 @Module({
-  imports: [ContactModule, UsersModule,AuthModule,QuoteModule, QuoteligneModule, InvoiceligneModule,InvoiceModule,PurchaseOrderModule,PurchaseOrderligneModule,DeliveryNoteModule,DeliveryNoteligneModule, ProjectModule, PhaseModule, MilestoneModule,DelivrableModule,PaymentModule,MessageModule,MessageGateway],
+  imports: [ContactModule, UsersModule,AuthModule,QuoteModule, QuoteligneModule, InvoiceligneModule,InvoiceModule,PurchaseOrderModule,PurchaseOrderligneModule,DeliveryNoteModule,DeliveryNoteligneModule, ProjectModule, PhaseModule, MilestoneModule,DelivrableModule,PaymentModule,MessageModule,MessageGateway,PdfDashboardModule],
   controllers: [AppController],
   providers: [AppService],
 })

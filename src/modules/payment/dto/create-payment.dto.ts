@@ -9,7 +9,8 @@ paymentDate:Date;
 
   @IsString()
   status: string;
-
+@IsNumber()
+dueBalence:number;
   @IsInt()
   invoiceId: number;
 

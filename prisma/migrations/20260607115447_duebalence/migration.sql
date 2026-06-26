@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Payment" ADD COLUMN     "dueBalence" DOUBLE PRECISION NOT NULL DEFAULT 0;

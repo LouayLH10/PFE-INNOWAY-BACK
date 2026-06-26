@@ -32,7 +32,7 @@ private mapPaymentToTemplate(payment: any) {
   return {
     receiptNumber: `REC-${payment.id}`,
     date: new Date(payment.paymentDate).toLocaleDateString(),
-
+ 
     clientName: payment.invoice?.contact?.user?.name || 'N/A',
     clientEmail: payment.invoice?.contact?.user?.email || 'N/A',
 
