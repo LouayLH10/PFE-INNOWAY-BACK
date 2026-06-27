@@ -85,16 +85,16 @@ model Invoice {
   paymentTerms  String
   currency      String
 
-  createdAt     DateTime      @default(now())
+  createdAt DateTime @default(now())
 
-  contactId     Int
-  contact        Contact       @relation(fields: [contactId], references: [id])
+  contactId Int
+  contact   Contact @relation(fields: [contactId], references: [id])
 
-  projectId     Int?
-  project        Project?      @relation(fields: [projectId], references: [id])
+  projectId Int?
+  project   Project? @relation(fields: [projectId], references: [id])
 
   invoiceLignes InvoiceLigne[]
-  payments       Payment[]
+  payments      Payment[]
 }
 
 enum InvoiceStatus {

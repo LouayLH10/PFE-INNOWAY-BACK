@@ -30,26 +30,31 @@ export class InvoiceService {
   }
   const reference = `INV-${year}-${String(nextNumber).padStart(4, '0')}`;
 
-    return await this.prisma.invoice.create({
-      data: {
-        ...data,
-      subTotal: 0,
-      taxTotal: 0,
-      total: 0,
-      balanceDue: 0,
-      discountTotal:0,
-      reference:reference,
-        contact: {
-          connect: { id: contactId }, // 🔗 relation
-        },
-              project: { // ✅ OBLIGATOIRE
+return await this.prisma.invoice.create({
+  data: {
+    ...data,
+    subTotal: 0,
+    taxTotal: 0,
+    total: 0,
+    balanceDue: 0,
+    discountTotal: 0,
+    reference,
+
+    contact: {
+      connect: { id: contactId },
+    },
+
+    ...(projectId && {
+      project: {
         connect: { id: projectId },
       },
-      },
-      include: {
-        contact: true,
-      },
-    });
+    }),
+  },
+  include: {
+    contact: true,
+    project: true,
+  },
+});
   }
 
   // ✅ FIND ALL
