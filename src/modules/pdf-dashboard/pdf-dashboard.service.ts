@@ -47,19 +47,18 @@ await page.setContent(`
 
     return Buffer.from(pdf);
   }
-    private transporter =
-    nodemailer.createTransport({
-      service: 'gmail',
+private transporter = nodemailer.createTransport({
+  host: "smtp.gmail.com",
   port: 587,
-  secure: false, 
-      auth: {
-        user:
-          process.env.MAIL_USER,
-
-        pass:
-          process.env.PASS_MAIL,
-      },
-    });
+  secure: false,
+  auth: {
+    user: process.env.MAIL_USER,
+    pass: process.env.PASS_MAIL,
+  },
+  connectionTimeout: 30000,
+  greetingTimeout: 30000,
+  socketTimeout: 30000,
+});
 
   async sendDashboardMail(
     email: string,
