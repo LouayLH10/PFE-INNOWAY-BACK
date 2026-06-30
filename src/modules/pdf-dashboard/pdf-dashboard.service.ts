@@ -1,75 +1,94 @@
-// pdf.service.ts
-
-import { Injectable } from '@nestjs/common';
-import * as puppeteer from 'puppeteer';
-
+import { Injectable, BadRequestException } from '@nestjs/common';
+import puppeteer from 'puppeteer-core';
+import chromium from '@sparticuz/chromium';
 import * as nodemailer from 'nodemailer';
-import chromium from "@sparticuz/chromium";
+
 @Injectable()
 export class PdfDashboardService {
+  private transporter = nodemailer.createTransport({
+    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false,
+    auth: {
+      user: process.env.MAIL_USER,
+      pass: process.env.PASS_MAIL,
+    },
+  });
+
   async generateDashboardPdf(
     dashboardHtml: string,
   ): Promise<Buffer> {
- const browser = await puppeteer.launch({
-  executablePath: await chromium.executablePath(),
-  args: chromium.args,
-  headless: true,
-});
-
-    const page =
-      await browser.newPage();
-await page.setContent(`
-<!DOCTYPE html>
-<html>
-<head>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body>
-  ${dashboardHtml}
-</body>
-</html>
-`,   {
-        waitUntil: 'networkidle0',
-      },);
-   
-    const pdf = await page.pdf({
-      format: 'A4',
-      printBackground: true,
+    const browser = await puppeteer.launch({
+      executablePath: await chromium.executablePath(),
+      args: chromium.args,
+      headless: true,
     });
 
-    await browser.close();
+    try {
+      const page = await browser.newPage();
 
-    return Buffer.from(pdf);
+      await page.setContent(
+        `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <script src="https://cdn.tailwindcss.com"></script>
+        </head>
+        <body>
+          ${dashboardHtml}
+        </body>
+        </html>
+        `,
+        {
+          waitUntil: 'load',
+        },  
+      );
+
+      const pdf = await page.pdf({
+        format: 'A4',
+        printBackground: true,
+      });
+
+      return Buffer.from(pdf);
+    } finally {
+      await browser.close();
+    }
   }
-private transporter = nodemailer.createTransport({ service: 'gmail', port: 587, secure: false, auth: { user: process.env.MAIL_USER, pass: process.env.PASS_MAIL, }, });
+
   async sendDashboardMail(
     email: string,
     subject: string,
     message: string,
     file: Express.Multer.File,
   ) {
+    if (!email || email.trim() === '') {
+      throw new BadRequestException('Recipient email is required.');
+    }
+
+    if (!file) {
+      throw new BadRequestException('PDF file is required.');
+    }
+
+    console.log('Sending email to:', email);
+
     await this.transporter.sendMail({
-      from: process.env.MAIL_USER,
-
+      from: `"InnoWay CRM" <${process.env.MAIL_USER}>`,
       to: email,
-
       subject,
-
       text: message,
-
       attachments: [
         {
-          filename:
-            file.originalname,
-
+          filename: file.originalname || 'dashboard.pdf',
           content: file.buffer,
+          contentType: 'application/pdf',
         },
       ],
     });
 
     return {
       success: true,
-      message: 'Email sent',
+      message: 'Email sent successfully.',
     };
   }
 }
