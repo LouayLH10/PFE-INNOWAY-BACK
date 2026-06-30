@@ -2,6 +2,7 @@
 
 import { Injectable } from '@nestjs/common';
 import * as puppeteer from 'puppeteer';
+
 import * as nodemailer from 'nodemailer';
 
 @Injectable()
@@ -47,16 +48,7 @@ await page.setContent(`
 
     return Buffer.from(pdf);
   }
-private transporter = nodemailer.createTransport({
-  host: "smtp-relay.brevo.com",
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.MAIL_USER,
-    pass: process.env.PASS_MAIL,
-  },
-});
-
+private transporter = nodemailer.createTransport({ service: 'gmail', port: 587, secure: false, auth: { user: process.env.MAIL_USER, pass: process.env.PASS_MAIL, }, });
   async sendDashboardMail(
     email: string,
     subject: string,
