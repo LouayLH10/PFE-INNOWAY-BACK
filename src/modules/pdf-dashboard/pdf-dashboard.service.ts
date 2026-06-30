@@ -16,13 +16,13 @@ export class PdfDashboardService {
   async generateDashboardPdf(
     dashboardHtml: string,
   ): Promise<Buffer> {
+const executablePath = await chromium.executablePath();
+
+console.log("Chromium executable:", executablePath);
+
 const browser = await puppeteer.launch({
-  executablePath: await chromium.executablePath(),
-  args: [
-    ...chromium.args,
-    "--no-sandbox",
-    "--disable-setuid-sandbox",
-  ],
+  executablePath,
+  args: chromium.args,
   headless: true,
 });
 

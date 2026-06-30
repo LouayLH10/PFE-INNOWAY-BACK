@@ -183,13 +183,13 @@ console.log(po)
     const template = handlebars.compile(htmlTemplate);
     const html = template(data);
 
-  const browser = await puppeteer.launch({
-  executablePath: await chromium.executablePath(),
-  args: [
-    ...chromium.args,
-    "--no-sandbox",
-    "--disable-setuid-sandbox",
-  ],
+  const executablePath = await chromium.executablePath();
+
+console.log("Chromium executable:", executablePath);
+
+const browser = await puppeteer.launch({
+  executablePath,
+  args: chromium.args,
   headless: true,
 });
     const page = await browser.newPage();
