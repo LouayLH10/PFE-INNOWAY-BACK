@@ -4,7 +4,7 @@ import { Injectable } from '@nestjs/common';
 import * as puppeteer from 'puppeteer';
 
 import * as nodemailer from 'nodemailer';
-
+import chromium from "@sparticuz/chromium";
 @Injectable()
 export class PdfDashboardService {
   async generateDashboardPdf(
