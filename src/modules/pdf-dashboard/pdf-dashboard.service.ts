@@ -7,9 +7,6 @@ import * as nodemailer from 'nodemailer';
 export class PdfDashboardService {
   private transporter = nodemailer.createTransport({
     service: 'gmail',
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false,
     auth: {
       user: process.env.MAIL_USER,
       pass: process.env.PASS_MAIL,
