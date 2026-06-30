@@ -8,10 +8,14 @@ private transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 587,
   secure: false,
+  requireTLS: true,
   auth: {
     user: process.env.MAIL_USER,
     pass: process.env.PASS_MAIL,
   },
+  connectionTimeout: 60000, // 60 secondes
+  greetingTimeout: 60000,
+  socketTimeout: 60000,
 });
   async generateDashboardPdf(
     dashboardHtml: string,
