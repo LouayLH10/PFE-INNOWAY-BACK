@@ -11,12 +11,9 @@ export class PdfDashboardService {
     dashboardHtml: string,
   ): Promise<Buffer> {
  const browser = await puppeteer.launch({
-  executablePath: "/usr/bin/google-chrome",
+  executablePath: await chromium.executablePath(),
+  args: chromium.args,
   headless: true,
-  args: [
-    "--no-sandbox",
-    "--disable-setuid-sandbox",
-  ],
 });
 
     const page =

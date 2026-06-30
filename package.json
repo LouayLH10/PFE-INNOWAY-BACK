@@ -6,8 +6,8 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
- "postinstall": "npx puppeteer browsers install chrome",
-  "build": "prisma generate && nest build",
+    "postinstall": "npx puppeteer browsers install chrome",
+    "build": "prisma generate && nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",

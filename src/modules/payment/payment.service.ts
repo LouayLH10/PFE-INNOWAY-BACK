@@ -5,8 +5,8 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import path from 'path';
 import * as fs from 'fs';
 import * as handlebars from 'handlebars';
+import chromium from "@sparticuz/chromium";
 import puppeteer from "puppeteer-core";
-
 @Injectable()
 export class PaymentService {
     constructor(private prisma: PrismaService) {}
@@ -80,12 +80,9 @@ async generatePdf(data: any): Promise<Buffer> {
   const html = template(data);
 
 const browser = await puppeteer.launch({
-  executablePath: "/usr/bin/google-chrome",
+  executablePath: await chromium.executablePath(),
+  args: chromium.args,
   headless: true,
-  args: [
-    "--no-sandbox",
-    "--disable-setuid-sandbox",
-  ],
 });
   const page = await browser.newPage();
 
