@@ -5,7 +5,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import path from 'path';
 import * as fs from 'fs';
 import * as handlebars from 'handlebars';
-import puppeteer from 'puppeteer';
+import puppeteer from "puppeteer-core";
 
 @Injectable()
 export class ProjectService {
@@ -199,16 +199,12 @@ async generatePdf(data: any): Promise<Buffer> {
 
   const html = template(data);
 
-  const browser = await puppeteer.launch({
+const browser = await puppeteer.launch({
+  executablePath: "/usr/bin/google-chrome",
   headless: true,
   args: [
-    '--no-sandbox',
-    '--disable-setuid-sandbox',
-    '--disable-dev-shm-usage',
-    '--disable-gpu',
-    '--no-first-run',
-    '--no-zygote',
-    '--single-process',
+    "--no-sandbox",
+    "--disable-setuid-sandbox",
   ],
 });
   const page = await browser.newPage();
