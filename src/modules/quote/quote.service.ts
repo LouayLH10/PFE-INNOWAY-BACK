@@ -178,7 +178,11 @@ async generatePdf(data: any): Promise<Buffer> {
 
   const browser = await puppeteer.launch({
   executablePath: await chromium.executablePath(),
-  args: chromium.args,
+  args: [
+    ...chromium.args,
+    "--no-sandbox",
+    "--disable-setuid-sandbox",
+  ],
   headless: true,
 });
     const page = await browser.newPage();
