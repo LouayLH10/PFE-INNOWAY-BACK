@@ -1,18 +1,19 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import puppeteer from 'puppeteer-core';
 import chromium from '@sparticuz/chromium';
-import * as nodemailer from 'nodemailer';
-
+import nodemailer from 'nodemailer';
 @Injectable()
 export class PdfDashboardService {
-  private transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.MAIL_USER,
-      pass: process.env.PASS_MAIL,
-    },
-  });
-
+private transporter = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false,
+  requireTLS: true,
+  auth: {
+    user: process.env.MAIL_USER,
+    pass: process.env.PASS_MAIL,
+  },
+});
   async generateDashboardPdf(
     dashboardHtml: string,
   ): Promise<Buffer> {
