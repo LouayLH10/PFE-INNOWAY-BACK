@@ -6,8 +6,8 @@ import { User } from 'src/users/entities/user.entity';
 import path from 'path';
 import * as fs from 'fs';
 import * as handlebars from 'handlebars';
-import chromium from "@sparticuz/chromium";
-import puppeteer from "puppeteer-core";
+import puppeteer from 'puppeteer';
+import chromium from '@sparticuz/chromium';
 @Injectable()
 export class QuoteService {
   constructor(private prisma: PrismaService) {}
@@ -165,40 +165,46 @@ async generatePdfById(id: number): Promise<Buffer> {
   return this.generatePdf(data); // puppeteer
 }
 async generatePdf(data: any): Promise<Buffer> {
-    const templatePath = path.join(
-      process.cwd(),
-      'src/modules/quote/templates/quote.hbs'
-    );
+  const templatePath = path.join(
+    process.cwd(),
+    'src/modules/quote/templates/quote.hbs',
+  );
 
-    const templateHtml = fs.readFileSync(templatePath, 'utf-8');
+  const templateHtml = fs.readFileSync(templatePath, 'utf-8');
+  const template = handlebars.compile(templateHtml);
+  const html = template(data);
 
-    const template = handlebars.compile(templateHtml);
+  let browser;
 
-    const html = template(data);
-
-  const executablePath = await chromium.executablePath();
-
-console.log("Chromium executable:", executablePath);
-
-const browser = await puppeteer.launch({
-  executablePath,
-  args: chromium.args,
-  headless: true,
-});
-    const page = await browser.newPage();
-
-    await page.setContent(html);
-
-    const pdf = await page.pdf({
-      format: 'A4',
-      printBackground: true,
+  if (process.env.NODE_ENV === 'PROD') {
+    // Render
+    browser = await puppeteer.launch({
+      executablePath: await chromium.executablePath(),
+      args: chromium.args,
+      headless: true,
     });
-const pdfBuffer = Buffer.from(pdf);
-
-    await browser.close();
-
-    return pdfBuffer;
+  } else {
+    // Local Windows
+    browser = await puppeteer.launch({
+      headless: true,
+    });
   }
+
+  const page = await browser.newPage();
+
+  await page.setContent(html, {
+    waitUntil: 'load',
+  });
+
+  const pdf = await page.pdf({
+    format: 'A4',
+    printBackground: true,
+  });
+
+  await browser.close();
+
+  return Buffer.from(pdf);
+}
   async changeStatus(id: number) {
   // 1️⃣ récupérer quote actuel
   const quote = await this.prisma.quote.findUnique({

@@ -1,34 +1,44 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
-import puppeteer from 'puppeteer-core';
+import puppeteer from 'puppeteer';
+import puppeteerCore from 'puppeteer-core';
 import chromium from '@sparticuz/chromium';
-import * as nodemailer from "nodemailer";
+import * as nodemailer from 'nodemailer';
+
 @Injectable()
 export class PdfDashboardService {
-private transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
-  requireTLS: true,
-  auth: {
-    user: process.env.MAIL_USER,
-    pass: process.env.PASS_MAIL,
-  },
-  connectionTimeout: 60000, // 60 secondes
-  greetingTimeout: 60000,
-  socketTimeout: 60000,
-});
+  private transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.MAIL_USER,
+      pass: process.env.PASS_MAIL,
+    },
+  });
+
   async generateDashboardPdf(
     dashboardHtml: string,
   ): Promise<Buffer> {
-const executablePath = await chromium.executablePath();
 
-console.log("Chromium executable:", executablePath);
+    let browser;
 
-const browser = await puppeteer.launch({
-  executablePath,
-  args: chromium.args,
-  headless: true,
-});
+    // LOCAL
+    if (process.env.NODE_ENV !== 'PROD') {
+      browser = await puppeteer.launch({
+        headless: true,
+      });
+    }
+
+    // RENDER / VERCEL
+    else {
+      browser = await puppeteerCore.launch({
+        executablePath: await chromium.executablePath(),
+        args: [
+          ...chromium.args,
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+        ],
+        headless: true,
+      });
+    }
 
     try {
       const page = await browser.newPage();
@@ -47,7 +57,7 @@ const browser = await puppeteer.launch({
         `,
         {
           waitUntil: 'load',
-        },  
+        },
       );
 
       const pdf = await page.pdf({
@@ -67,15 +77,13 @@ const browser = await puppeteer.launch({
     message: string,
     file: Express.Multer.File,
   ) {
-    if (!email || email.trim() === '') {
+    if (!email) {
       throw new BadRequestException('Recipient email is required.');
     }
 
     if (!file) {
       throw new BadRequestException('PDF file is required.');
     }
-
-    console.log('Sending email to:', email);
 
     await this.transporter.sendMail({
       from: `"InnoWay CRM" <${process.env.MAIL_USER}>`,
@@ -84,9 +92,8 @@ const browser = await puppeteer.launch({
       text: message,
       attachments: [
         {
-          filename: file.originalname || 'dashboard.pdf',
+          filename: file.originalname ?? 'dashboard.pdf',
           content: file.buffer,
-          contentType: 'application/pdf',
         },
       ],
     });

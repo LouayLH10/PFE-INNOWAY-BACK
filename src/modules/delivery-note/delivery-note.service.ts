@@ -3,8 +3,10 @@ import path from 'path';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as fs from 'fs';
 import * as handlebars from 'handlebars';
-import chromium from "@sparticuz/chromium";
-import puppeteer from "puppeteer-core";@Injectable()
+import puppeteer from 'puppeteer';
+import puppeteerCore from 'puppeteer-core';
+import chromium from '@sparticuz/chromium';
+@Injectable()
 export class DeliveryNoteService {
 
   constructor(private prisma: PrismaService) {}
@@ -142,37 +144,49 @@ async generatePdfById(id: number): Promise<Buffer> {
 async generatePdf(data: any): Promise<Buffer> {
   const templatePath = path.join(
     process.cwd(),
-    'src/modules/delivery-note/templates/delivery-note.hbs' // ✅ ici
+    'src/modules/delivery-note/templates/delivery-note.hbs',
   );
 
-  const templateHtml = fs.readFileSync(templatePath, 'utf-8');
+  const templateHtml = fs.readFileSync(templatePath, 'utf8');
 
   const template = handlebars.compile(templateHtml);
-
   const html = template(data);
 
-const executablePath = await chromium.executablePath();
+  let browser;
 
-console.log("Chromium executable:", executablePath);
+  if (process.env.NODE_ENV === 'PROD') {
+    // Render
+    browser = await puppeteerCore.launch({
+      executablePath: await chromium.executablePath(),
+      args: [
+        ...chromium.args,
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+      ],
+      headless: true,
+    });
+  } else {
+    // Local
+    browser = await puppeteer.launch({
+      headless: true,
+    });
+  }
 
-const browser = await puppeteer.launch({
-  executablePath,
-  args: chromium.args,
-  headless: true,
-});
-  const page = await browser.newPage();
+  try {
+    const page = await browser.newPage();
 
-  await page.setContent(html);
+    await page.setContent(html, {
+      waitUntil: 'load',
+    });
 
-  const pdf = await page.pdf({
-    format: 'A4',
-    printBackground: true,
-  });
+    const pdf = await page.pdf({
+      format: 'A4',
+      printBackground: true,
+    });
 
-  const pdfBuffer = Buffer.from(pdf);
-
-  await browser.close();
-
-  return pdfBuffer;
+    return Buffer.from(pdf);
+  } finally {
+    await browser.close();
+  }
 }
 }

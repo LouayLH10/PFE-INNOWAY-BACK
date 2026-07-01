@@ -1,105 +1,122 @@
 import { Injectable } from '@nestjs/common';
-import { CreatePaymentDto } from './dto/create-payment.dto';
-import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+
 import path from 'path';
 import * as fs from 'fs';
 import * as handlebars from 'handlebars';
-import chromium from "@sparticuz/chromium";
-import puppeteer from "puppeteer-core";
+
+import puppeteer from 'puppeteer';
+import puppeteerCore from 'puppeteer-core';
+import chromium from '@sparticuz/chromium';
+
 @Injectable()
 export class PaymentService {
-    constructor(private prisma: PrismaService) {}
-  
-async findByUser(userId: number) {
-  return await this.prisma.payment.findMany({
-    where: {
-      invoice: {
-        contact: {
-          userId,
+  constructor(private prisma: PrismaService) {}
+
+  async findByUser(userId: number) {
+    return await this.prisma.payment.findMany({
+      where: {
+        invoice: {
+          contact: {
+            userId,
+          },
         },
       },
-    },
-    include: {
-      invoice: true,
-    },
-    orderBy: {
-     paymentDate: 'desc',
-    },
-  });
-}
-private mapPaymentToTemplate(payment: any) {
-  return {
-    receiptNumber: `REC-${payment.id}`,
-    date: new Date(payment.paymentDate).toLocaleDateString(),
- 
-    clientName: payment.invoice?.contact?.user?.name || 'N/A',
-    clientEmail: payment.invoice?.contact?.user?.email || 'N/A',
+      include: {
+        invoice: true,
+      },
+      orderBy: {
+        paymentDate: 'desc',
+      },
+    });
+  }
 
-    invoiceRef: payment.invoice?.reference,
+  private mapPaymentToTemplate(payment: any) {
+    return {
+      receiptNumber: `REC-${payment.id}`,
+      date: new Date(payment.paymentDate).toLocaleDateString(),
 
-    amount: payment.amount,
-    method: payment.method,
-    status: payment.status,
-  };
-}
-async generatePdfById(id: number): Promise<Buffer> {
-  const payment = await this.prisma.payment.findUnique({
-    where: { id },
-    include: {
-      invoice: {
-        include: {
-          contact: {
-            include: {
-              user: true,
+      clientName: payment.invoice?.contact?.user?.name || 'N/A',
+      clientEmail: payment.invoice?.contact?.user?.email || 'N/A',
+
+      invoiceRef: payment.invoice?.reference,
+
+      amount: payment.amount,
+      method: payment.method,
+      status: payment.status,
+    };
+  }
+
+  async generatePdfById(id: number): Promise<Buffer> {
+    const payment = await this.prisma.payment.findUnique({
+      where: { id },
+      include: {
+        invoice: {
+          include: {
+            contact: {
+              include: {
+                user: true,
+              },
             },
           },
         },
       },
-    },
-  });
+    });
 
-  if (!payment) {
-    throw new Error('Payment not found');
+    if (!payment) {
+      throw new Error('Payment not found');
+    }
+
+    const data = this.mapPaymentToTemplate(payment);
+
+    return this.generatePdf(data);
   }
 
-  const data = this.mapPaymentToTemplate(payment);
+  async generatePdf(data: any): Promise<Buffer> {
+    const templatePath = path.join(
+      process.cwd(),
+      'src/modules/payment/templates/receipt.hbs',
+    );
 
-  return this.generatePdf(data);
-}
-async generatePdf(data: any): Promise<Buffer> {
-  const templatePath = path.join(
-    process.cwd(),
-    'src/modules/payment/templates/receipt.hbs'
-  );
+    const templateHtml = fs.readFileSync(templatePath, 'utf8');
+    const template = handlebars.compile(templateHtml);
+    const html = template(data);
 
-  const templateHtml = fs.readFileSync(templatePath, 'utf-8');
+    let browser;
 
-  const template = handlebars.compile(templateHtml);
+    if (process.env.NODE_ENV === 'PROD') {
+      // Render
+      browser = await puppeteerCore.launch({
+        executablePath: await chromium.executablePath(),
+        args: [
+          ...chromium.args,
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+        ],
+        headless: true,
+      });
+    } else {
+      // Local
+      browser = await puppeteer.launch({
+        headless: true,
+      });
+    }
 
-  const html = template(data);
+    try {
+      const page = await browser.newPage();
 
-const executablePath = await chromium.executablePath();
+      await page.setContent(html, {
+        waitUntil: 'load',
+      });
 
-console.log("Chromium executable:", executablePath);
+      const pdf = await page.pdf({
+        format: 'A4',
+        printBackground: true,
+      });
 
-const browser = await puppeteer.launch({
-  executablePath,
-  args: chromium.args,
-  headless: true,
-});
-  const page = await browser.newPage();
-
-  await page.setContent(html);
-
-  const pdf = await page.pdf({
-    format: 'A4',
-    printBackground: true,
-  });
-
-  await browser.close();
-
-  return Buffer.from(pdf);
-}
-
+      return Buffer.from(pdf);
+    } finally {
+      await browser.close();
+    }
+  }
 }

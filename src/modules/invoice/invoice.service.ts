@@ -6,7 +6,8 @@ import path from 'path';
 import * as fs from 'fs';
 import * as handlebars from 'handlebars';
 import chromium from "@sparticuz/chromium";
-import puppeteer from "puppeteer-core";
+import puppeteer from 'puppeteer';
+import puppeteerCore from 'puppeteer-core';
 @Injectable()
 export class InvoiceService {
 
@@ -217,40 +218,50 @@ async generatePdfById(id: number): Promise<Buffer> {
   return this.generatePdf(data);
 }
 async generatePdf(data: any): Promise<Buffer> {
-
   const templatePath = path.join(
     process.cwd(),
-    'src/modules/invoice/templates/invoice.hbs' // ✅ changer ici
+    'src/modules/invoice/templates/invoice.hbs',
   );
 
-  const templateHtml = fs.readFileSync(templatePath, 'utf-8');
-
+  const templateHtml = fs.readFileSync(templatePath, 'utf8');
   const template = handlebars.compile(templateHtml);
-
   const html = template(data);
 
-const executablePath = await chromium.executablePath();
+  let browser;
 
-console.log("Chromium executable:", executablePath);
+  if (process.env.NODE_ENV === 'PROD') {
+    // Render / Vercel
+    browser = await puppeteerCore.launch({
+      executablePath: await chromium.executablePath(),
+      args: [
+        ...chromium.args,
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+      ],
+      headless: true,
+    });
+  } else {
+    // Développement (Windows/Linux/macOS)
+    browser = await puppeteer.launch({
+      headless: true,
+    });
+  }
 
-const browser = await puppeteer.launch({
-  executablePath,
-  args: chromium.args,
-  headless: true,
-});
-  const page = await browser.newPage();
+  try {
+    const page = await browser.newPage();
 
-  await page.setContent(html);
+    await page.setContent(html, {
+      waitUntil: 'load',
+    });
 
-  const pdf = await page.pdf({
-    format: 'A4',
-    printBackground: true,
-  });
+    const pdf = await page.pdf({
+      format: 'A4',
+      printBackground: true,
+    });
 
-  const pdfBuffer = Buffer.from(pdf);
-
-  await browser.close();
-
-  return pdfBuffer;
+    return Buffer.from(pdf);
+  } finally {
+    await browser.close();
+  }
 }
 }

@@ -5,8 +5,9 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as handlebars from 'handlebars';
-import chromium from "@sparticuz/chromium";
-import puppeteer from "puppeteer-core";
+import puppeteer from 'puppeteer';
+import puppeteerCore from 'puppeteer-core';
+import chromium from '@sparticuz/chromium';
 @Injectable()
 export class PurchaseOrderService {
   constructor(private prisma: PrismaService) {}
@@ -172,39 +173,54 @@ console.log(po)
   }
 
   // ✅ GENERATE PDF
-  async generatePdf(data: any): Promise<Buffer> {
-    const templatePath = path.join(
-      process.cwd(),
-      'src/modules/purchase-order/templates/purchase-order.hbs'
-    );
+async generatePdf(data: any): Promise<Buffer> {
+  const templatePath = path.join(
+    process.cwd(),
+    'src/modules/purchase-order/templates/purchase-order.hbs',
+  );
 
-    const htmlTemplate = fs.readFileSync(templatePath, 'utf-8');
+  const htmlTemplate = fs.readFileSync(templatePath, 'utf8');
 
-    const template = handlebars.compile(htmlTemplate);
-    const html = template(data);
+  const template = handlebars.compile(htmlTemplate);
+  const html = template(data);
 
-  const executablePath = await chromium.executablePath();
+  let browser;
 
-console.log("Chromium executable:", executablePath);
+  if (process.env.NODE_ENV === 'production') {
+    // Render
+    browser = await puppeteerCore.launch({
+      executablePath: await chromium.executablePath(),
+      args: [
+        ...chromium.args,
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+      ],
+      headless: true,
+    });
+  } else {
+    // Local
+    browser = await puppeteer.launch({
+      headless: true,
+    });
+  }
 
-const browser = await puppeteer.launch({
-  executablePath,
-  args: chromium.args,
-  headless: true,
-});
+  try {
     const page = await browser.newPage();
 
-    await page.setContent(html);
+    await page.setContent(html, {
+      waitUntil: 'load',
+    });
 
     const pdf = await page.pdf({
       format: 'A4',
       printBackground: true,
     });
 
-    await browser.close();
-
     return Buffer.from(pdf);
+  } finally {
+    await browser.close();
   }
+}
 
   // ✅ CHANGE STATUS
   async changeStatus(id: number) {
