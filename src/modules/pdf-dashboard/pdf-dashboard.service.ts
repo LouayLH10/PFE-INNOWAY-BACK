@@ -6,14 +6,23 @@ import * as nodemailer from 'nodemailer';
 
 @Injectable()
 export class PdfDashboardService {
-  private transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.MAIL_USER,
-      pass: process.env.PASS_MAIL,
-    },
-  });
-
+private transporter = process.env.NODE_ENV === 'PROD'
+  ? nodemailer.createTransport({
+      host: 'smtp-relay.brevo.com',
+      port: 587,
+      secure: false,
+      auth: {
+        user: process.env.BREVO_LOGIN,
+        pass: process.env.BREVO_SMTP_KEY,
+      },
+    })
+  : nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.MAIL_USER,
+        pass: process.env.PASS_MAIL,
+      },
+    });
   async generateDashboardPdf(
     dashboardHtml: string,
   ): Promise<Buffer> {
@@ -85,18 +94,22 @@ export class PdfDashboardService {
       throw new BadRequestException('PDF file is required.');
     }
 
-    await this.transporter.sendMail({
-      from: `"InnoWay CRM" <${process.env.MAIL_USER}>`,
-      to: email,
-      subject,
-      text: message,
-      attachments: [
-        {
-          filename: file.originalname ?? 'dashboard.pdf',
-          content: file.buffer,
-        },
-      ],
-    });
+await this.transporter.sendMail({
+  from:
+    process.env.NODE_ENV === 'PROD'
+      ? `"InnoWay CRM" <${process.env.SENDER_EMAIL}>`
+      : process.env.MAIL_USER,
+
+  to: email,
+  subject,
+  text: message,
+  attachments: [
+    {
+      filename: file.originalname,
+      content: file.buffer,
+    },
+  ],
+});
 
     return {
       success: true,
