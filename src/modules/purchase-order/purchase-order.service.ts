@@ -29,7 +29,7 @@ export class PurchaseOrderService {
       nextNumber = lastNumber + 1;
     }
 
-    const reference = `PO-${year}-${String(nextNumber).padStart(4, '0')}`;
+    const reference = `SO-${year}-${String(nextNumber).padStart(4, '0')}`;
 
     return await this.prisma.purchaseOrder.create({
       data: {
@@ -186,7 +186,7 @@ async generatePdf(data: any): Promise<Buffer> {
 
   let browser;
 
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === 'PROD') {
     // Render
     browser = await puppeteerCore.launch({
       executablePath: await chromium.executablePath(),

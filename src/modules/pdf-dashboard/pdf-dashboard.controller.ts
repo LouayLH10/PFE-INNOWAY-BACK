@@ -1,4 +1,4 @@
-// pdf.controller.ts
+// pdf-dashboard.controller.ts
 
 import {
   Body,
@@ -8,9 +8,12 @@ import {
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
+
 import { Response } from 'express';
-import { PdfDashboardService } from './pdf-dashboard.service';
+
 import { FileInterceptor } from '@nestjs/platform-express';
+
+import { PdfDashboardService } from './pdf-dashboard.service';
 
 @Controller('pdf')
 export class PdfDashboardController {
@@ -18,45 +21,95 @@ export class PdfDashboardController {
     private readonly pdfService: PdfDashboardService,
   ) {}
 
+  // =====================================
+  // GENERATE DASHBOARD PDF
+  // =====================================
+
   @Post('dashboard')
   async generateDashboard(
-    @Body() body: {
-      html: string;
+    @Body()
+    body: {
+      userId: number;
+      year: number;
     },
-    @Res() res: Response,
+
+    @Res()
+    res: Response,
   ) {
+
     const pdf =
       await this.pdfService.generateDashboardPdf(
-        body.html,
+        body.userId,
+        body.year,
       );
 
     res.set({
-      'Content-Type':
-        'application/pdf',
+      'Content-Type': 'application/pdf',
       'Content-Disposition':
-        'attachment; filename=dashboard.pdf',
+        'attachment; filename=dashboard-report.pdf',
     });
 
     res.send(pdf);
+
   }
-    @Post('send-dashboard')
+
+  // =====================================
+  // SEND DASHBOARD BY EMAIL
+  // =====================================
+
+  @Post('send-dashboard')
+
   @UseInterceptors(
     FileInterceptor('file'),
   )
+
   async sendDashboard(
-    @UploadedFile() file: Express.Multer.File,
 
-    @Body('email') email: string,
+    @UploadedFile()
+    file: Express.Multer.File,
 
-    @Body('subject') subject: string,
+    @Body('email')
+    email: string,
 
-    @Body('message') message: string,
+    @Body('subject')
+    subject: string,
+
+    @Body('message')
+    message: string,
+
   ) {
-    return this.pdfService.sendDashboardMail(
+
+    return await this.pdfService.sendDashboardMail(
       email,
       subject,
       message,
       file,
     );
+
   }
+@Post('download-dashboard')
+async downloadDashboard(
+  @Body()
+  body: {
+    userId: number;
+    year: number;
+  },
+  @Res() res: Response,
+) {
+
+  const pdf =
+    await this.pdfService.generateDashboardPdf(
+      body.userId,
+      body.year,
+    );
+
+  res.set({
+    'Content-Type': 'application/pdf',
+    'Content-Disposition':
+      `attachment; filename=dashboard-${body.year}.pdf`,
+  });
+
+  res.send(pdf);
+
+}
 }

@@ -24,4 +24,19 @@ export class UsersService {
   remove(id: number) {
     return `This action removes a #${id} user`;
   }
+  async updateLanguage(userId: number, language: string) {
+  return this.prisma.user.update({
+    where: {
+      id: userId,
+    },
+    data: {
+      language,
+    },
+    select: {
+      id: true,
+      email: true,
+      language: true,
+    },
+  });
+}
 }

@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put, Req, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { JwtAuthGuard } from 'src/modules/contact/guards/jwt-auth.guard';
 
 @Controller('users')
 export class UsersController {
@@ -30,5 +31,16 @@ export class UsersController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.usersService.remove(+id);
+  }
+  @UseGuards(JwtAuthGuard)
+  @Put("language")
+  async updateLanguage(
+    @Req() req,
+    @Body("language") language: string,
+  ) {
+    return this.usersService.updateLanguage(
+      req.user.userId,
+      language,
+    );
   }
 }
