@@ -31,6 +31,7 @@ export class PdfDashboardController {
     body: {
       userId: number;
       year: number;
+      language:string;
     },
 
     @Res()
@@ -41,6 +42,7 @@ export class PdfDashboardController {
       await this.pdfService.generateDashboardPdf(
         body.userId,
         body.year,
+        body.language
       );
 
     res.set({
@@ -93,6 +95,7 @@ async downloadDashboard(
   body: {
     userId: number;
     year: number;
+    language:string;
   },
   @Res() res: Response,
 ) {
@@ -101,6 +104,7 @@ async downloadDashboard(
     await this.pdfService.generateDashboardPdf(
       body.userId,
       body.year,
+      body.language
     );
 
   res.set({

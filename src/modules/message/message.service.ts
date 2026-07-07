@@ -172,4 +172,31 @@ export class MessageService {
 
     return conversation;
   }
+  async markConversationAsRead(
+  senderId: number,
+  receiverId: number,
+) {
+  return this.prisma.message.updateMany({
+    where: {
+      senderId,
+      receiverId,
+      isRead: false,
+    },
+    data: {
+      isRead: true,
+    },
+  });
+}
+async unreadCount(userId:number){
+console.log(userId)
+   return this.prisma.message.count({
+
+      where:{
+         receiverId:userId,
+         isRead:false
+      }
+
+   });
+
+}
 }

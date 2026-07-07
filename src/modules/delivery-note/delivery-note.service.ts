@@ -119,8 +119,7 @@ export class DeliveryNoteService {
     })),
   };
 }
-async generatePdfById(id: number): Promise<Buffer> {
-
+async generatePdfById(id: number,language:string): Promise<Buffer> {
   const dn = await this.prisma.deliveryNote.findUnique({
     where: { id },
     include: {
@@ -139,12 +138,23 @@ async generatePdfById(id: number): Promise<Buffer> {
 
   const data = this.mapDeliveryNoteToTemplate(dn);
 
-  return this.generatePdf(data);
+  // 🔥 récupérer la langue du propriétaire
+
+  return this.generatePdf(data, language);
 }
-async generatePdf(data: any): Promise<Buffer> {
+async generatePdf(
+  data: any,
+  language: string,
+): Promise<Buffer> {
+  const templateName =
+    language === 'fr'
+      ? 'delivery-note-fr.hbs'
+      : 'delivery-note-en.hbs';
+
   const templatePath = path.join(
     process.cwd(),
-    'src/modules/delivery-note/templates/delivery-note.hbs',
+    'src/modules/delivery-note/templates',
+    templateName,
   );
 
   const templateHtml = fs.readFileSync(templatePath, 'utf8');

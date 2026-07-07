@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Res } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Res, Query } from '@nestjs/common';
 import { PaymentService } from './payment.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
@@ -18,8 +18,8 @@ findByUser(@Param('id') id: string) {
 }
 
 @Get('pdf/:id')
-async generate(@Param('id') id: string, @Res() res: Response) {
-  const pdf = await this.paymentService.generatePdfById(Number(id));
+async generate(@Param('id') id: string,@Query('language') language:string, @Res() res: Response) {
+  const pdf = await this.paymentService.generatePdfById(Number(id),language);
 
   res.set({
     'Content-Type': 'application/pdf',

@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+
+@page{
+    size:A4;
+    margin:20px;
+}
+
+body{
+    background:#EEF2F7;
+    color:#1E293B;
+    font-family:"Segoe UI",Arial,sans-serif;
+}
+
+/* ========================= */
+/* COVER PAGE */
+/* ========================= */
+
+.cover{
+    height:100vh;
+    background:linear-gradient(135deg,#2563EB,#1E40AF);
+    color:white;
+    position:relative;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+}
+
+.cover::before{
+    content:"";
+    position:absolute;
+    width:500px;
+    height:500px;
+    background:rgba(255,255,255,.08);
+    border-radius:50%;
+    top:-180px;
+    right:-120px;
+}
+
+.cover::after{
+    content:"";
+    position:absolute;
+    width:420px;
+    height:420px;
+    background:rgba(255,255,255,.05);
+    border-radius:50%;
+    bottom:-160px;
+    left:-120px;
+}
+
+.logo{
+    width:120px;
+    height:120px;
+    border-radius:50%;
+    background:white;
+    color:#2563EB;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:46px;
+    font-weight:bold;
+    margin-bottom:35px;
+    z-index:2;
+}
+
+.cover h1{
+    font-size:48px;
+    margin:0;
+    z-index:2;
+}
+
+.cover h2{
+    margin-top:18px;
+    font-weight:300;
+    letter-spacing:2px;
+    z-index:2;
+}
+
+.cover-info{
+    margin-top:60px;
+    background:rgba(255,255,255,.12);
+    padding:22px 35px;
+    border-radius:15px;
+    z-index:2;
+}
+
+.cover-info p{
+    margin:8px 0;
+    font-size:16px;
+}
+
+.page-break{
+    page-break-after:always;
+}
+
+/* ========================= */
+/* CONTENT */
+/* ========================= */
+
+.header{
+
+    background:linear-gradient(135deg,#2563EB,#3B82F6);
+
+    border-radius:18px;
+
+    padding:35px 45px;
+
+    color:white;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    box-shadow:0 10px 30px rgba(37,99,235,.2);
+
+    margin:25px;
+
+}
+.header h1{
+    margin:0;
+    font-size:34px;
+}
+
+.header p{
+    margin-top:8px;
+}
+
+.section{
+    padding:25px;
+}
+
+.title{
+
+    font-size:24px;
+
+    font-weight:700;
+
+    color:#1E3A8A;
+
+    margin-bottom:20px;
+
+    position:relative;
+
+    padding-left:18px;
+
+}
+
+.title::before{
+
+    content:"";
+
+    position:absolute;
+
+    left:0;
+
+    top:4px;
+
+    width:6px;
+
+    height:28px;
+
+    border-radius:10px;
+
+    background:#2563EB;
+
+}
+
+.kpis{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:15px;
+}
+
+.card{
+
+    position:relative;
+
+    overflow:hidden;
+
+    border-radius:18px;
+
+    padding:25px;
+
+    background:white;
+
+    box-shadow:0 10px 25px rgba(0,0,0,.06);
+
+    transition:.3s;
+
+}
+
+.card::before{
+
+    content:"";
+
+    position:absolute;
+
+    left:0;
+
+    top:0;
+
+    width:5px;
+
+    height:100%;
+
+    background:#2563EB;
+
+}
+
+.label{
+    color:#777;
+    font-size:14px;
+}
+
+.value{
+
+    font-size:36px;
+
+    color:#2563EB;
+
+    margin-top:15px;
+
+}
+
+
+
+
+
+select{
+    border:1px solid #ddd;
+    border-radius:30px;
+    padding:10px 20px;
+    font-size:14px;
+}
+
+.chart{
+    height:350px;
+}
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:18px;
+    margin-top:25px;
+}
+
+.box{
+    border-radius:18px;
+    padding:20px;
+    text-align:center;
+}
+
+.box h4{
+    margin:0;
+    color:#555;
+    font-weight:normal;
+}
+
+.box h2{
+    margin-top:10px;
+}
+
+.purple{
+    background:#F1ECFF;
+}
+
+.green{
+    background:#EAFBF0;
+}
+
+.blue{
+    background:#EDF4FF;
+}
+
+.purple h2{
+    color:#5B44FF;
+}
+
+.green h2{
+    color:#00B65B;
+}
+
+.blue h2{
+    color:#1D72F3;
+}
+
+.charts-container{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:25px;
+    margin-top:20px;
+}
+
+.chart-card{
+    flex:1;
+    background:white;
+   border:1px solid #EDF2F7;
+    padding:20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.06);
+    text-align:center;
+}
+
+.chart-card h3{
+    margin-bottom:15px;
+    color:#2563EB;
+    font-size:18px;
+}
+
+.chart-card canvas{
+    width:100% !important;
+    max-width:300px;
+    height:300px !important;
+    margin:auto;
+}
+
+.footer{
+    margin-top:40px;
+    text-align:center;
+    color:#777;
+    font-size:13px;
+}
+.chart-large{
+
+    background:#fff;
+
+    border-radius:18px;
+
+    padding:25px;
+
+    box-shadow:0 3px 12px rgba(0,0,0,.08);
+
+    width:100%;
+
+    height:420px;
+
+    margin-top:20px;
+
+}
+
+.chart-large canvas{
+
+    width:100% !important;
+
+    height:100% !important;
+
+}
+.section{
+    page-break-inside: avoid;
+    break-inside: avoid;
+}
+</style>
+
+</head>
+
+<body>
+
+<!-- ========================= -->
+<!-- COVER PAGE -->
+<!-- ========================= -->
+
+<div class="cover">
+
+    <div class="logo">
+        M
+    </div>
+
+    <h1>Business Dashboard Report</h1>
+
+    <h2>MY APP</h2>
+
+    <div class="cover-info">
+        <p><strong>Reporting Year :</strong> {{year}}</p>
+        <p><strong>Generated :</strong> {{generatedAt}}</p>
+         <p><strong>For :</strong> {{clientName}}</p>
+        <p><strong>Business Intelligence Report</strong></p>
+    </div>
+
+</div>
+
+
+<!-- ========================= -->
+<!-- HEADER -->
+<!-- ========================= -->
+
+<div class="header">
+
+<h1>Business Dashboard</h1>
+
+<p><b>Year:</b> {{year}}</p>
+
+<p><b>Generated:</b> {{generatedAt}}</p>
+
+</div>
+
+<!-- ========================= -->
+<!-- KPI -->
+<!-- ========================= -->
+
+<div class="section">
+
+<h2 class="title">Business KPIs</h2>
+
+<div class="kpis">
+
+<div class="card">
+<div class="label">Projects</div>
+<div class="value">{{nbProject}}</div>
+</div>
+
+<div class="card">
+<div class="label">Purchase Orders</div>
+<div class="value">{{nbOrder}}</div>
+</div>
+
+<div class="card">
+<div class="label">Delivery Notes</div>
+<div class="value">{{nbDn}}</div>
+</div>
+
+<div class="card">
+<div class="label">Invoices</div>
+<div class="value">{{nbInvoice}}</div>
+</div>
+
+<div class="card">
+<div class="label">Payments</div>
+<div class="value">{{nbPayment}}</div>
+</div>
+
+<div class="card">
+<div class="label">Amount Paid</div>
+<div class="value">{{amount}} TND</div>
+</div>
+
+</div>
+
+</div>
+
+<!-- ========================= -->
+<!-- INVOICE -->
+<!-- ========================= -->
+
+<!-- ========================= -->
+<!-- INVOICE -->
+<!-- ========================= -->
+
+<div class="section">
+
+    <h2 class="title">Invoice & Orders Statistics</h2>
+
+    <div class="charts-container">
+
+        <div class="chart-card">
+            <h3>Invoice Status</h3>
+            <canvas id="invoiceChart"></canvas>
+        </div>
+
+        <div class="chart-card">
+            <h3>Purchase Order Status</h3>
+            <canvas id="orderChart"></canvas>
+        </div>
+
+    </div>
+
+</div>
+
+
+
+
+<!-- ========================= -->
+<!-- PRODUCTS -->
+<!-- ========================= -->
+
+<div class="section">
+
+<div class="card">
+
+<div class="header">
+
+<div>
+<h2>Purchased Products</h2>
+<p>Products purchased over the year</p>
+</div>
+
+
+
+</div>
+
+<div class="chart">
+<canvas id="productsChart"></canvas>
+</div>
+
+<div class="stats">
+
+<div class="box purple">
+<h4>Total Purchased</h4>
+<h2 id="total"></h2>
+</div>
+
+<div class="box green">
+<h4>Best Month</h4>
+<h2 id="best"></h2>
+</div>
+
+<div class="box blue">
+<h4>Average / Month</h4>
+<h2 id="average"></h2>
+</div>
+
+</div>
+
+</div>
+</div>
+<div class="section">
+
+    <h2 class="title">Invoices per Month</h2>
+
+    <div class="chart-large">
+
+        <canvas id="invoiceMonthChart"></canvas>
+
+    </div>
+
+</div>
+<div class="footer">
+
+Generated automatically by <b>MY APP</b>
+
+</div>
+<script>
+
+const ctx = document.getElementById("invoiceChart");
+
+new Chart(ctx,{
+
+    type:"doughnut",
+
+    data:{
+
+        labels:[
+      "Paid ({{invoiceStats.paid}})",
+      "Sent ({{invoiceStats.sent}})",
+      "Draft ({{invoiceStats.draft}})",
+      "Cancelled ({{invoiceStats.cancelled}})"
+        ],
+
+        datasets:[{
+
+            data:[
+                {{invoiceStats.paid}},
+                {{invoiceStats.sent}},
+                {{invoiceStats.draft}},
+                {{invoiceStats.cancelled}}
+            ],
+
+            backgroundColor:[
+                "#22C55E",
+                "#3B82F6",
+                "#F59E0B",
+                "#EF4444"
+            ],
+
+            borderWidth:2,
+            borderColor:"#ffffff"
+
+        }]
+
+    },
+
+options:{
+    responsive:true,
+    maintainAspectRatio:true,
+    plugins:{
+        legend:{
+            position:"bottom",
+            labels:{
+                font:{
+                    size:12
+                }
+            }
+        }
+    },
+    cutout:"65%"
+}
+
+});
+const orderCtx = document.getElementById("orderChart").getContext("2d");
+
+new Chart(orderCtx,{
+    type:"doughnut",
+
+    data:{
+        labels:[
+            "Approved ({{orderStats.approved}})",
+            "Pending ({{orderStats.pending}})",
+            "Received ({{orderStats.recieved}})",
+            "Cancelled ({{orderStats.cancelled}})"
+        ],
+
+        datasets:[{
+            data:[
+                {{orderStats.approved}},
+                {{orderStats.pending}},
+                {{orderStats.recieved}},
+                {{orderStats.cancelled}}
+            ],
+
+            backgroundColor:[
+                "#22C55E",
+                "#F59E0B",
+                "#3B82F6",
+                "#EF4444"
+            ],
+
+            borderColor:"#fff",
+            borderWidth:4
+        }]
+    },
+
+    options:{
+  responsive:true,
+maintainAspectRatio:true,
+
+        plugins:{
+            legend:{
+                position:"bottom",
+
+                labels:{
+                    boxWidth:14,
+                    padding:15,
+                    font:{
+                        size:12
+                    }
+                }
+            }
+        },
+
+        cutout:"65%"
+    }
+});
+const data=[
+{{purchacedProd.jan}},
+{{purchacedProd.feb}},
+{{purchacedProd.mar}},
+{{purchacedProd.apr}},
+{{purchacedProd.may}},
+{{purchacedProd.jun}},
+{{purchacedProd.jul}},
+{{purchacedProd.aug}},
+{{purchacedProd.sep}},
+{{purchacedProd.oct}},
+{{purchacedProd.nov}},
+{{purchacedProd.dec}}
+];
+const months=[
+"Jan","Feb","Mar","Apr","May","Jun",
+"Jul","Aug","Sep","Oct","Nov","Dec"
+];
+
+const total=data.reduce((a,b)=>a+b,0);
+
+const bestValue=Math.max(...data);
+
+const bestMonth=months[data.indexOf(bestValue)];
+
+const average=(total/12).toFixed(1);
+
+document.getElementById("total").innerHTML=total;
+document.getElementById("best").innerHTML=bestMonth;
+document.getElementById("average").innerHTML=average;
+
+new Chart(document.getElementById("productsChart"),{
+
+type:"bar",
+
+data:{
+
+labels:months,
+
+datasets:[{
+
+label:"Purchased",
+
+data:data,
+
+borderRadius:8,
+
+backgroundColor:"#6B4CF5",
+
+hoverBackgroundColor:"#5A3FE8"
+
+}]
+
+},
+
+options:{
+
+responsive:true,
+
+maintainAspectRatio:false,
+
+plugins:{
+
+legend:{
+display:false
+}
+
+},
+
+scales:{
+
+x:{
+grid:{
+display:false
+}
+},
+
+y:{
+beginAtZero:true,
+ticks:{
+stepSize:3
+},
+grid:{
+borderDash:[4,4]
+}
+}
+
+}
+
+}
+
+});
+const invoiceMonthCtx =
+document.getElementById("invoiceMonthChart");
+
+new Chart(invoiceMonthCtx,{
+
+    type:"bar",
+
+    data:{
+
+        labels:[
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dec"
+        ],
+
+        datasets:[{
+
+            label:"Invoices",
+
+            data:[
+
+                {{invoicePerMonth.jan}},
+                {{invoicePerMonth.feb}},
+                {{invoicePerMonth.mar}},
+                {{invoicePerMonth.apr}},
+                {{invoicePerMonth.may}},
+                {{invoicePerMonth.jun}},
+                {{invoicePerMonth.jul}},
+                {{invoicePerMonth.aug}},
+                {{invoicePerMonth.sep}},
+                {{invoicePerMonth.oct}},
+                {{invoicePerMonth.nov}},
+                {{invoicePerMonth.dec}}
+
+            ],
+
+            backgroundColor:"#2563EB",
+
+            borderRadius:8,
+
+            maxBarThickness:40
+
+        }]
+
+    },
+
+    options:{
+
+        responsive:true,
+
+        maintainAspectRatio:false,
+
+        plugins:{
+
+            legend:{
+                display:false
+            },
+
+            tooltip:{
+                enabled:true
+            }
+
+        },
+
+        scales:{
+
+            x:{
+
+                grid:{
+                    display:false
+                }
+
+            },
+
+            y:{
+
+                beginAtZero:true,
+
+                ticks:{
+                    precision:0
+                },
+
+                grid:{
+                    color:"#E5E7EB"
+                }
+
+            }
+
+        }
+
+    }
+
+});
+</script>
+</body>
+</html>

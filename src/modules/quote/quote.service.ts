@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateQuoteDto } from './dto/create-quote.dto';
 import { UpdateQuoteDto } from './dto/update-quote.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -146,7 +146,7 @@ private mapQuoteToTemplate(quoteFromDB: any) {
     total: quoteFromDB.totalAmount,
   };
 }
-async generatePdfById(id: number): Promise<Buffer> {
+async generatePdfById(id: number,language:string): Promise<Buffer> {
 
   const quote = await this.prisma.quote.findUnique({
     where: { id },
@@ -160,31 +160,40 @@ async generatePdfById(id: number): Promise<Buffer> {
     },
   });
 
-  const data = this.mapQuoteToTemplate(quote); // 🔥 ici
+  if (!quote) {
+    throw new NotFoundException("Quote not found");
+  }
 
-  return this.generatePdf(data); // puppeteer
+  const data = this.mapQuoteToTemplate(quote);
+
+  // 🔥 récupérer la langue de l'utilisateur
+
+  return this.generatePdf(data, language);
 }
-async generatePdf(data: any): Promise<Buffer> {
+async generatePdf(
+  data: any,
+  language: string,
+): Promise<Buffer> {
+
   const templatePath = path.join(
     process.cwd(),
-    'src/modules/quote/templates/quote.hbs',
+    "src/modules/quote/templates",
+    `quote-${language}.hbs`,
   );
 
-  const templateHtml = fs.readFileSync(templatePath, 'utf-8');
+  const templateHtml = fs.readFileSync(templatePath, "utf8");
   const template = handlebars.compile(templateHtml);
   const html = template(data);
 
   let browser;
 
-  if (process.env.NODE_ENV === 'PROD') {
-    // Render
+  if (process.env.NODE_ENV === "PROD") {
     browser = await puppeteer.launch({
       executablePath: await chromium.executablePath(),
       args: chromium.args,
       headless: true,
     });
   } else {
-    // Local Windows
     browser = await puppeteer.launch({
       headless: true,
     });
@@ -193,11 +202,11 @@ async generatePdf(data: any): Promise<Buffer> {
   const page = await browser.newPage();
 
   await page.setContent(html, {
-    waitUntil: 'load',
+    waitUntil: "load",
   });
 
   const pdf = await page.pdf({
-    format: 'A4',
+    format: "A4",
     printBackground: true,
   });
 

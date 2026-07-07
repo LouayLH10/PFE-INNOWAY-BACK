@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Res } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Res, Query } from '@nestjs/common';
 import { ProjectService } from './project.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
@@ -37,8 +37,8 @@ export class ProjectController {
     return this.projectService.remove(+id);
   }
   @Get('pdf/:id')
-async generate(@Param('id') id: string, @Res() res: Response) {
-  const pdf = await this.projectService.generatePdfById(Number(id));
+async generate(@Param('id') id: string,@Query('language') language:string, @Res() res: Response) {
+  const pdf = await this.projectService.generatePdfById(Number(id),language);
 
   res.setHeader('Content-Type', 'application/pdf');
   res.setHeader(

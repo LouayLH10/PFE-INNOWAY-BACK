@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    padding: 30px;
+    color: #333;
+  }
+
+  h1 {
+    color: #1e88a8;
+  }
+
+  .box {
+    border: 1px solid #ddd;
+    padding: 20px;
+    border-radius: 10px;
+  }
+
+  .row {
+    margin: 10px 0;
+  }
+
+  .label {
+    font-weight: bold;
+  }
+
+  .total {
+    font-size: 20px;
+    color: #1e88a8;
+    font-weight: bold;
+  }
+</style>
+</head>
+
+<body>
+
+<h1>Reçu de Paiement</h1>
+
+<div class="box">
+
+  <div class="row">
+    <span class="label">N° du reçu :</span> {{receiptNumber}}
+  </div>
+
+  <div class="row">
+    <span class="label">Date :</span> {{date}}
+  </div>
+
+  <hr/>
+
+  <div class="row">
+    <span class="label">Client :</span> {{clientName}}
+  </div>
+
+  <div class="row">
+    <span class="label">E-mail :</span> {{clientEmail}}
+  </div>
+
+  <hr/>
+
+  <div class="row">
+    <span class="label">Référence de la facture :</span> {{invoiceRef}}
+  </div>
+
+  <div class="row">
+    <span class="label">Mode de paiement :</span> {{method}}
+  </div>
+
+  <div class="row">
+    <span class="label">Statut :</span> {{status}}
+  </div>
+
+  <hr/>
+
+  <div class="row total">
+    Montant payé : {{amount}} TND
+  </div>
+
+</div>
+
+<p style="margin-top:30px; text-align:center; color:#1e88a8;">
+  Merci pour votre paiement !
+</p>
+
+</body>
+</html>

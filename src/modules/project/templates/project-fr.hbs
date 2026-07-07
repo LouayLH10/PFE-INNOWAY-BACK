@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<style>
+  html, body {
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    display: flex;
+  }
+
+  /* 🔵 PANNEAU GAUCHE */
+  .sidebar {
+    width: 30%;
+    background: #1e88a8;
+    color: white;
+    padding: 30px;
+  }
+
+  .sidebar h1 {
+    font-size: 24px;
+    margin-bottom: 30px;
+  }
+
+  .sidebar p {
+    margin: 10px 0;
+    font-size: 14px;
+  }
+
+  .label {
+    font-weight: bold;
+  }
+
+  /* ⚪ CONTENU */
+  .content {
+    width: 70%;
+    background: #f5f7fa;
+    padding: 20px;
+  }
+
+  .card {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    margin-top: 30px;
+  }
+
+  .card h3 {
+    margin-bottom: 10px;
+    color: #1e88a8;
+  }
+
+  .small {
+    font-size: 13px;
+    color: #555;
+  }
+
+  ul {
+    padding-left: 18px;
+  }
+
+</style>
+</head>
+
+<body>
+
+<!-- 🔵 BARRE LATÉRALE -->
+<div class="sidebar">
+
+  <h1>Charte du Projet</h1>
+
+  <p>
+    <span class="label">Titre du projet :</span><br>
+    {{title}}
+  </p>
+
+  <p>
+    <span class="label">Chef de projet :</span><br>
+    {{clientName}}
+  </p>
+
+  <p>
+    <span class="label">E-mail :</span><br>
+    {{clientEmail}}
+  </p>
+
+  <p>
+    <span class="label">Date de début :</span><br>
+    {{startDate}}
+  </p>
+
+  <p>
+    <span class="label">Date de fin :</span><br>
+    {{endDate}}
+  </p>
+
+  <p>
+    <span class="label">Statut :</span><br>
+    {{status}}
+  </p>
+
+</div>
+
+<!-- ⚪ CONTENU -->
+<div class="content">
+
+  <div class="grid">
+
+    <!-- OBJECTIF -->
+    <div class="card">
+      <h3>Objectif du projet</h3>
+      <p class="small">
+        {{description}}
+      </p>
+    </div>
+
+    <!-- PHASES -->
+    <div class="card">
+
+      <h3>Phases du projet</h3>
+
+      <ul>
+
+        {{#each phases}}
+
+        <li style="margin-bottom: 10px;">
+
+          <b>{{this.name}}</b> - {{this.status}}<br>
+
+          <span class="small">
+            {{this.startDate}} → {{this.endDate}}
+          </span>
+
+          {{#if this.deliverables.length}}
+
+          <ul>
+
+            {{#each this.deliverables}}
+
+            <li class="small">
+              • {{this.name}} ({{this.status}}) - {{this.deadline}}
+            </li>
+
+            {{/each}}
+
+          </ul>
+
+          {{/if}}
+
+        </li>
+
+        {{/each}}
+
+      </ul>
+
+    </div>
+
+    <!-- JALONS -->
+    <div class="card">
+
+      <h3>Jalons du projet</h3>
+
+      <ul>
+
+        {{#each milestones}}
+
+        <li>
+
+          <b>{{this.name}}</b> - {{this.status}}<br>
+
+          <span class="small">
+            {{this.deadline}}
+          </span>
+
+        </li>
+
+        {{/each}}
+
+      </ul>
+
+    </div>
+
+  </div>
+
+</div>
+
+</body>
+</html>

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Res } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Res, Query } from '@nestjs/common';
 import { QuoteService } from './quote.service';
 import { CreateQuoteDto } from './dto/create-quote.dto';
 import { UpdateQuoteDto } from './dto/update-quote.dto';
@@ -37,9 +37,9 @@ findMany(@Param('iduser') userId: string) {
     return this.quoteService.remove(+id);
   }
 @Get('pdf/:id')
-async generate(@Param('id') id: string, @Res() res: Response) {
+async generate(@Param('id') id: string,@Query('language') language:string, @Res() res: Response) {
 
-  const pdf = await this.quoteService.generatePdfById(Number(id));
+  const pdf = await this.quoteService.generatePdfById(Number(id),language);
 
   res.set({
     'Content-Type': 'application/pdf',

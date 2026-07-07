@@ -6,7 +6,8 @@ import {
   Patch,
   Param,
   Delete,
-  Res
+  Res,
+  Query
 } from '@nestjs/common';
 import { PurchaseOrderService } from './purchase-order.service';
 import { CreatePurchaseOrderDto } from './dto/create-purchase-order.dto';
@@ -61,9 +62,10 @@ export class PurchaseOrderController {
   @Get('pdf/:id')
   async generate(
     @Param('id') id: string,
+    @Query('language') language:string,
     @Res() res: Response
   ) {
-    const pdf = await this.purchaseOrderService.generatePdfById(Number(id));
+    const pdf = await this.purchaseOrderService.generatePdfById(Number(id),language);
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader(

@@ -152,31 +152,37 @@ export class PurchaseOrderService {
   }
 
   // ✅ PDF BY ID
-  async generatePdfById(id: number): Promise<Buffer> {
-    const po = await this.prisma.purchaseOrder.findUnique({
-      where: { id },
-      include: {
-        items: true,
-       contact: {
+async generatePdfById(id: number,language:string): Promise<Buffer> {
+  const po = await this.prisma.purchaseOrder.findUnique({
+    where: { id },
+    include: {
+      items: true,
+      contact: {
         include: {
           user: true,
         },
       },
-      },
-    });
+    },
+  });
 
-    if (!po) throw new Error('Purchase Order not found');
-console.log(po)
-    const data = this.mapToTemplate(po);
-
-    return this.generatePdf(data);
+  if (!po) {
+    throw new Error('Purchase Order not found');
   }
 
-  // ✅ GENERATE PDF
-async generatePdf(data: any): Promise<Buffer> {
+  const data = this.mapToTemplate(po);
+
+
+  return this.generatePdf(data, language);
+}
+async generatePdf(
+  data: any,
+  language: string,
+): Promise<Buffer> {
+
   const templatePath = path.join(
     process.cwd(),
-    'src/modules/purchase-order/templates/purchase-order.hbs',
+    'src/modules/purchase-order/templates',
+    `purchase-order-${language}.hbs`,
   );
 
   const htmlTemplate = fs.readFileSync(templatePath, 'utf8');
@@ -187,7 +193,6 @@ async generatePdf(data: any): Promise<Buffer> {
   let browser;
 
   if (process.env.NODE_ENV === 'PROD') {
-    // Render
     browser = await puppeteerCore.launch({
       executablePath: await chromium.executablePath(),
       args: [
@@ -198,7 +203,6 @@ async generatePdf(data: any): Promise<Buffer> {
       headless: true,
     });
   } else {
-    // Local
     browser = await puppeteer.launch({
       headless: true,
     });

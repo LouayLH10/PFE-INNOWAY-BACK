@@ -164,7 +164,7 @@ async create(dto: CreateProjectDto) {
     })),
   };
 }
-async generatePdfById(id: number): Promise<Buffer> {
+async generatePdfById(id: number,language:string): Promise<Buffer> {
   const project = await this.prisma.project.findUnique({
     where: { id },
     include: {
@@ -182,37 +182,53 @@ async generatePdfById(id: number): Promise<Buffer> {
     },
   });
 
-  if (!project) throw new Error('Project not found');
+  if (!project) {
+    throw new Error("Project not found");
+  }
+
+
 
   const data = this.mapProjectToTemplate(project);
 
-  return this.generatePdf(data);
+  return this.generatePdf(data, language);
 }
-async generatePdf(data: any): Promise<Buffer> {
+async generatePdf(
+  data: any,
+  language: string,
+): Promise<Buffer> {
+
+  const templateName =
+    language === "fr"
+      ? "project-fr.hbs"
+      : "project-en.hbs";
+
   const templatePath = path.join(
     process.cwd(),
-    'src/modules/project/templates/project.hbs',
+    "src/modules/project/templates",
+    templateName,
   );
 
-  const templateHtml = fs.readFileSync(templatePath, 'utf8');
+  const templateHtml = fs.readFileSync(
+    templatePath,
+    "utf8",
+  );
+
   const template = handlebars.compile(templateHtml);
   const html = template(data);
 
   let browser;
 
-  if (process.env.NODE_ENV === 'PROD') {
-    // Render
+  if (process.env.NODE_ENV === "PROD") {
     browser = await puppeteerCore.launch({
       executablePath: await chromium.executablePath(),
       args: [
         ...chromium.args,
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
       ],
       headless: true,
     });
   } else {
-    // Local
     browser = await puppeteer.launch({
       headless: true,
     });
@@ -222,11 +238,11 @@ async generatePdf(data: any): Promise<Buffer> {
     const page = await browser.newPage();
 
     await page.setContent(html, {
-      waitUntil: 'load',
+      waitUntil: "load",
     });
 
     const pdf = await page.pdf({
-      format: 'A4',
+      format: "A4",
       printBackground: true,
     });
 

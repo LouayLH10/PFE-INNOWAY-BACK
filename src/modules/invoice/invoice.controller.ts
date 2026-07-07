@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Res } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Res, Query } from '@nestjs/common';
 import { InvoiceService } from './invoice.service';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
 import { UpdateInvoiceDto } from './dto/update-invoice.dto';
@@ -44,9 +44,9 @@ changeStatus(
   return this.invoiceService.changeStatus(Number(id));
 }
 @Get('pdf/:id')
-async generate(@Param('id') id: string, @Res() res: Response) {
+async generate(@Param('id') id: string,@Query('language') language:string, @Res() res: Response) {
 
-  const pdf = await this.invoiceService.generatePdfById(Number(id));
+  const pdf = await this.invoiceService.generatePdfById(Number(id),language);
 
   res.set({
     'Content-Type': 'application/pdf',

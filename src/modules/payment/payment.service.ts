@@ -47,76 +47,89 @@ export class PaymentService {
     };
   }
 
-  async generatePdfById(id: number): Promise<Buffer> {
-    const payment = await this.prisma.payment.findUnique({
-      where: { id },
-      include: {
-        invoice: {
-          include: {
-            contact: {
-              include: {
-                user: true,
-              },
+async generatePdfById(id: number,language:string): Promise<Buffer> {
+  const payment = await this.prisma.payment.findUnique({
+    where: { id },
+    include: {
+      invoice: {
+        include: {
+          contact: {
+            include: {
+              user: true,
             },
           },
         },
       },
+    },
+  });
+
+  if (!payment) {
+    throw new Error('Payment not found');
+  }
+
+
+
+  const data = this.mapPaymentToTemplate(payment);
+
+  return this.generatePdf(data, language);
+}
+async generatePdf(
+  data: any,
+  language: string,
+): Promise<Buffer> {
+
+  const templateName =
+    language === 'fr'
+      ? 'receipt-fr.hbs'
+      : 'receipt-en.hbs';
+
+  const templatePath = path.join(
+    process.cwd(),
+    'src/modules/payment/templates',
+    templateName,
+  );
+
+  const templateHtml = fs.readFileSync(
+    templatePath,
+    'utf8',
+  );
+
+  const template = handlebars.compile(templateHtml);
+  const html = template(data);
+
+  let browser;
+
+  if (process.env.NODE_ENV === 'PROD') {
+    browser = await puppeteerCore.launch({
+      executablePath: await chromium.executablePath(),
+      args: [
+        ...chromium.args,
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+      ],
+      headless: true,
+    });
+  } else {
+    browser = await puppeteer.launch({
+      headless: true,
+    });
+  }
+
+  try {
+    const page = await browser.newPage();
+
+    await page.setContent(html, {
+      waitUntil: 'load',
     });
 
-    if (!payment) {
-      throw new Error('Payment not found');
-    }
+    const pdf = await page.pdf({
+      format: 'A4',
+      printBackground: true,
+    });
 
-    const data = this.mapPaymentToTemplate(payment);
-
-    return this.generatePdf(data);
+    return Buffer.from(pdf);
+  } finally {
+    await browser.close();
   }
-
-  async generatePdf(data: any): Promise<Buffer> {
-    const templatePath = path.join(
-      process.cwd(),
-      'src/modules/payment/templates/receipt.hbs',
-    );
-
-    const templateHtml = fs.readFileSync(templatePath, 'utf8');
-    const template = handlebars.compile(templateHtml);
-    const html = template(data);
-
-    let browser;
-
-    if (process.env.NODE_ENV === 'PROD') {
-      // Render
-      browser = await puppeteerCore.launch({
-        executablePath: await chromium.executablePath(),
-        args: [
-          ...chromium.args,
-          '--no-sandbox',
-          '--disable-setuid-sandbox',
-        ],
-        headless: true,
-      });
-    } else {
-      // Local
-      browser = await puppeteer.launch({
-        headless: true,
-      });
-    }
-
-    try {
-      const page = await browser.newPage();
-
-      await page.setContent(html, {
-        waitUntil: 'load',
-      });
-
-      const pdf = await page.pdf({
-        format: 'A4',
-        printBackground: true,
-      });
-
-      return Buffer.from(pdf);
-    } finally {
-      await browser.close();
-    }
-  }
+}
 }

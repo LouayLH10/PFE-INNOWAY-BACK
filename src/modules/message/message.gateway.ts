@@ -31,7 +31,6 @@ export class MessageGateway {
     // room user-1 user-2 ...
     client.join(`user-${userId}`);
 
-    console.log(`User ${userId} joined room`);
   }
 
   // 🔥 envoyer message temps réel

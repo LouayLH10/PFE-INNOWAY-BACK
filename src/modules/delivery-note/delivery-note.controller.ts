@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Res } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Res, Query } from '@nestjs/common';
 import { DeliveryNoteService } from './delivery-note.service';
 import { CreateDeliveryNoteDto } from './dto/create-delivery-note.dto';
 import { UpdateDeliveryNoteDto } from './dto/update-delivery-note.dto';
@@ -32,9 +32,9 @@ export class DeliveryNoteController {
     return this.deliveryNoteService.remove(+id);
   }
   @Get('pdf/:id')
-async generate(@Param('id') id: string, @Res() res: Response) {
+async generate(@Param('id') id: string, @Query("language") language: string, @Res() res: Response) {
 
-  const pdf = await this.deliveryNoteService.generatePdfById(Number(id));
+  const pdf = await this.deliveryNoteService.generatePdfById(Number(id), language || "en");
 
   res.set({
     'Content-Type': 'application/pdf',

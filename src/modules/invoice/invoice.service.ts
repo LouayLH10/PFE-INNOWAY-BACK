@@ -195,8 +195,7 @@ private mapInvoiceToTemplate(invoiceFromDB: any) {
     total: invoiceFromDB.total,
   };
 }
-async generatePdfById(id: number): Promise<Buffer> {
-
+async generatePdfById(id: number,language:string): Promise<Buffer> {
   const invoice = await this.prisma.invoice.findUnique({
     where: { id },
     include: {
@@ -215,12 +214,24 @@ async generatePdfById(id: number): Promise<Buffer> {
 
   const data = this.mapInvoiceToTemplate(invoice);
 
-  return this.generatePdf(data);
+  // langue du propriétaire de la facture
+
+  return this.generatePdf(data, language);
 }
-async generatePdf(data: any): Promise<Buffer> {
+async generatePdf(
+  data: any,
+  language: string,
+): Promise<Buffer> {
+
+  const templateName =
+    language === 'fr'
+      ? 'invoice-fr.hbs'
+      : 'invoice-en.hbs';
+
   const templatePath = path.join(
     process.cwd(),
-    'src/modules/invoice/templates/invoice.hbs',
+    'src/modules/invoice/templates',
+    templateName,
   );
 
   const templateHtml = fs.readFileSync(templatePath, 'utf8');
@@ -230,7 +241,6 @@ async generatePdf(data: any): Promise<Buffer> {
   let browser;
 
   if (process.env.NODE_ENV === 'PROD') {
-    // Render / Vercel
     browser = await puppeteerCore.launch({
       executablePath: await chromium.executablePath(),
       args: [
@@ -241,7 +251,6 @@ async generatePdf(data: any): Promise<Buffer> {
       headless: true,
     });
   } else {
-    // Développement (Windows/Linux/macOS)
     browser = await puppeteer.launch({
       headless: true,
     });

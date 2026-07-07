@@ -20,23 +20,20 @@ import { extname } from 'path';
 
 @Controller('message')
 export class MessageController {
-  constructor(private readonly messageService: MessageService) {}
+  constructor(
+    private readonly messageService: MessageService,
+  ) {}
 
-  // ✅ CREATE MESSAGE (avec fichier)
-   @Post()
+  // ============================
+  // CREATE MESSAGE
+  // ============================
+  @Post()
   @UseInterceptors(
     FileInterceptor('file', {
-
       storage: diskStorage({
-
         destination: './uploads',
 
-        filename: (
-          req,
-          file,
-          callback,
-        ) => {
-
+        filename: (req, file, callback) => {
           const uniqueName =
             Date.now() +
             '-' +
@@ -45,57 +42,111 @@ export class MessageController {
 
           callback(null, uniqueName);
         },
-
       }),
-
     }),
   )
   create(
     @Body() createMessageDto: CreateMessageDto,
-
-    @UploadedFile()
-    file?: Express.Multer.File,
+    @UploadedFile() file?: Express.Multer.File,
   ) {
-
     return this.messageService.create(
       createMessageDto,
       file,
     );
-
   }
-  // ✅ GET ALL
+
+  // ============================
+  // GET ALL
+  // ============================
   @Get()
   findAll() {
     return this.messageService.findAll();
   }
 
-  // ✅ GET CONVERSATION (IMPORTANT 🔥)
+  // ============================
+  // GET CONVERSATION
+  // ============================
   @Get('conversation')
   getConversation(
-    @Query('user1Id', ParseIntPipe) user1Id: number,
-    @Query('user2Id', ParseIntPipe) user2Id: number,
+    @Query('user1Id', ParseIntPipe)
+    user1Id: number,
+
+    @Query('user2Id', ParseIntPipe)
+    user2Id: number,
   ) {
-    return this.messageService.getConversation(user1Id, user2Id);
+    return this.messageService.getConversation(
+      user1Id,
+      user2Id,
+    );
   }
 
-  // ✅ GET ONE
+  // ============================
+  // UNREAD COUNT
+  // ============================
+  @Get('unread-count')
+  unreadCount(
+    @Query('userId', ParseIntPipe)
+    userId: number,
+  ) {
+
+    return this.messageService.unreadCount(
+      userId,
+    );
+  }
+
+  // ============================
+  // MARK AS READ
+  // ============================
+  @Patch('read')
+  markAsRead(
+    @Query('senderId', ParseIntPipe)
+    senderId: number,
+
+    @Query('receiverId', ParseIntPipe)
+    receiverId: number,
+  ) {
+    return this.messageService.markConversationAsRead(
+      senderId,
+      receiverId,
+    );
+  }
+
+  // ============================
+  // GET ONE
+  // ============================
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
+  findOne(
+    @Param('id', ParseIntPipe)
+    id: number,
+  ) {
     return this.messageService.findOne(id);
   }
 
-  // ✅ UPDATE
+  // ============================
+  // UPDATE
+  // ============================
   @Patch(':id')
   update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() updateMessageDto: UpdateMessageDto,
+    @Param('id', ParseIntPipe)
+    id: number,
+
+    @Body()
+    updateMessageDto: UpdateMessageDto,
   ) {
-    return this.messageService.update(id, updateMessageDto);
+    return this.messageService.update(
+      id,
+      updateMessageDto,
+    );
   }
 
-  // ✅ DELETE
+  // ============================
+  // DELETE
+  // ============================
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
+  remove(
+    @Param('id', ParseIntPipe)
+    id: number,
+  ) {
     return this.messageService.remove(id);
   }
 }
