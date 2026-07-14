@@ -110,7 +110,7 @@ body{
 
     border-radius:18px;
 
-    padding:35px 45px;
+    padding:20px ;
 
     color:white;
 
@@ -127,7 +127,7 @@ body{
 }
 .header h1{
     margin:0;
-    font-size:34px;
+    font-size:25px;
 }
 
 .header p{
@@ -358,6 +358,10 @@ select{
     page-break-inside: avoid;
     break-inside: avoid;
 }
+.amount{
+    font-size: 25px;
+}
+
 </style>
 
 </head>
@@ -403,10 +407,7 @@ select{
         <p>Rapport de synthèse des activités</p>
     </div>
 
-    <div style="text-align:right;">
-        <p><strong>Année :</strong> {{year}}</p>
-        <p><strong>Généré le :</strong> {{generatedAt}}</p>
-    </div>
+
 
 </div>
 
@@ -447,7 +448,7 @@ select{
 
 <div class="card">
 <div class="label">Montant encaissé</div>
-<div class="value">{{amount}} TND</div>
+<div class="value amount">{{amount}}</div>
 </div>
 
 </div>
@@ -469,12 +470,12 @@ select{
     <div class="charts-container">
 
         <div class="chart-card">
-            <h3>Répartition des factures par statut</h3>
+            <h3>Factures par statut</h3>
             <canvas id="invoiceChart"></canvas>
         </div>
 
-        <div class="chart-card">
-            <h3>Répartition des bons de commande par statut</h3>
+        <div class="chart-card ">
+            <h3> Commandes par statut</h3>
             <canvas id="orderChart"></canvas>
         </div>
 

@@ -1,6 +1,10 @@
 import { Module } from '@nestjs/common';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+
 import { ContactModule } from './modules/contact/contact.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -18,11 +22,34 @@ import { MilestoneModule } from './modules/milestone/milestone.module';
 import { DelivrableModule } from './modules/delivrable/delivrable.module';
 import { PaymentModule } from './modules/payment/payment.module';
 import { MessageModule } from './modules/message/message.module';
-import { MessageGateway } from './modules/message/message.gateway';
 import { PdfDashboardModule } from './modules/pdf-dashboard/pdf-dashboard.module';
 
 @Module({
-  imports: [ContactModule, UsersModule,AuthModule,QuoteModule, QuoteligneModule, InvoiceligneModule,InvoiceModule,PurchaseOrderModule,PurchaseOrderligneModule,DeliveryNoteModule,DeliveryNoteligneModule, ProjectModule, PhaseModule, MilestoneModule,DelivrableModule,PaymentModule,MessageModule,MessageGateway,PdfDashboardModule],
+  imports: [
+    ServeStaticModule.forRoot({
+      rootPath: join(process.cwd(), 'uploads'),
+      serveRoot: '/uploads',
+    }),
+
+    ContactModule,
+    UsersModule,
+    AuthModule,
+    QuoteModule,
+    QuoteligneModule,
+    InvoiceligneModule,
+    InvoiceModule,
+    PurchaseOrderModule,
+    PurchaseOrderligneModule,
+    DeliveryNoteModule,
+    DeliveryNoteligneModule,
+    ProjectModule,
+    PhaseModule,
+    MilestoneModule,
+    DelivrableModule,
+    PaymentModule,
+    MessageModule,
+    PdfDashboardModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

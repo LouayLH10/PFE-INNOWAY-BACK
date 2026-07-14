@@ -164,19 +164,20 @@ async generateDashboardPdf(
   // PAYMENT TOTAL / DUE BALANCE
   // ==========================================
 
-  let amount = 0;
-  let balance = 0;
+  var am = 0;
+  let bal = 0;
 
   filteredPayments.forEach(pay => {
 
-    amount += pay.amount;
+    am += pay.amount;
 
-    balance +=
+    bal +=
       pay.invoice?.balanceDue ?? 0;
 
   });
-
-  // ==========================================
+const amount=this.formatTND(am)
+const balance=this.formatTND(bal)  
+// ==========================================
   // INVOICE STATUS
   // ==========================================
 
@@ -330,6 +331,8 @@ filteredInvoices.forEach(invoice => {
     }
 
 });
+
+
 const data = {
   year: selectedYear,
 clientName,
@@ -472,5 +475,23 @@ await this.transporter.sendMail({
       message: 'Email sent successfully.',
     };
   }
+private formatTND(amount: number | string): string {
+  const value = Number(amount);
+
+  if (isNaN(value)) {
+    return "0,000 TND";
+  }
+
+  return (
+    value
+      .toLocaleString("fr-FR", {
+        minimumFractionDigits: 3,
+        maximumFractionDigits: 3,
+      })
+      .replace(/\u202F/g, " ")
+      .replace(/\u00A0/g, " ") +
+    " TND"
+  );
+}
 }
 

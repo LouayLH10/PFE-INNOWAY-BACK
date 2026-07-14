@@ -358,6 +358,9 @@ select{
     page-break-inside: avoid;
     break-inside: avoid;
 }
+.amount{
+    font-size: 25px;
+}
 </style>
 
 </head>
@@ -396,9 +399,7 @@ select{
 
 <h1>Business Dashboard</h1>
 
-<p><b>Year:</b> {{year}}</p>
 
-<p><b>Generated:</b> {{generatedAt}}</p>
 
 </div>
 
@@ -439,7 +440,7 @@ select{
 
 <div class="card">
 <div class="label">Amount Paid</div>
-<div class="value">{{amount}} TND</div>
+<div class="value amount">{{amount}}</div>
 </div>
 
 </div>
