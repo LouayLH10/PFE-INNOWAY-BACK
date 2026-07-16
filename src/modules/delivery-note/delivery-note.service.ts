@@ -165,16 +165,14 @@ async generatePdf(
   let browser;
 
   if (process.env.NODE_ENV === 'PROD') {
-    // Render
-    browser = await puppeteerCore.launch({
-      executablePath: await chromium.executablePath(),
-      args: [
-        ...chromium.args,
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-      ],
-      headless: true,
-    });
+    // Renderconst browser = await puppeteerCore.launch({
+  headless: true,
+  args: [
+    "--no-sandbox",
+    "--disable-setuid-sandbox",
+    "--disable-dev-shm-usage",
+  ],
+});
   } else {
     // Local
     browser = await puppeteer.launch({
