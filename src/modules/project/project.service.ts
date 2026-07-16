@@ -215,20 +215,23 @@ async generatePdf(
   const template = handlebars.compile(templateHtml);
   const html = template(data);
 
+  console.log("NODE_ENV:", process.env.NODE_ENV);
+
   let browser;
 
-  if (process.env.NODE_ENV === "PROD") {
+  if (process.env.NODE_ENV === "production") {
     browser = await puppeteer.launch({
       executablePath: await chromium.executablePath(),
 
+      headless: true,
+
       args: [
-        ...chromium.args,
         "--no-sandbox",
         "--disable-setuid-sandbox",
         "--disable-dev-shm-usage",
-      ],
 
-      headless: "shell",
+        ...chromium.args,
+      ],
     });
   } else {
     browser = await puppeteer.launch({
@@ -240,7 +243,7 @@ async generatePdf(
     const page = await browser.newPage();
 
     await page.setContent(html, {
-      waitUntil: "load",
+      waitUntil: "networkidle0",
     });
 
     const pdf = await page.pdf({
