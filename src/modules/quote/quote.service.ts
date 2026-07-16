@@ -174,24 +174,42 @@ async generatePdf(
   data: any,
   language: string,
 ): Promise<Buffer> {
+  const templateName =
+    language === "fr"
+      ? "quote-fr.hbs"
+      : "quote-en.hbs";
 
   const templatePath = path.join(
     process.cwd(),
     "src/modules/quote/templates",
-    `quote-${language}.hbs`,
+    templateName,
   );
 
-  const templateHtml = fs.readFileSync(templatePath, "utf8");
+  const templateHtml = fs.readFileSync(
+    templatePath,
+    "utf8",
+  );
+
   const template = handlebars.compile(templateHtml);
   const html = template(data);
 
+  console.log("NODE_ENV:", process.env.NODE_ENV);
+
   let browser;
 
-  if (process.env.NODE_ENV === "PROD") {
+  if (process.env.NODE_ENV === "production") {
     browser = await puppeteer.launch({
       executablePath: await chromium.executablePath(),
-      args: chromium.args,
+
       headless: true,
+
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+
+        ...chromium.args,
+      ],
     });
   } else {
     browser = await puppeteer.launch({
@@ -199,20 +217,22 @@ async generatePdf(
     });
   }
 
-  const page = await browser.newPage();
+  try {
+    const page = await browser.newPage();
 
-  await page.setContent(html, {
-    waitUntil: "load",
-  });
+    await page.setContent(html, {
+      waitUntil: "networkidle0",
+    });
 
-  const pdf = await page.pdf({
-    format: "A4",
-    printBackground: true,
-  });
+    const pdf = await page.pdf({
+      format: "A4",
+      printBackground: true,
+    });
 
-  await browser.close();
-
-  return Buffer.from(pdf);
+    return Buffer.from(pdf);
+  } finally {
+    await browser.close();
+  }
 }
   async changeStatus(id: number) {
   // 1️⃣ récupérer quote actuel

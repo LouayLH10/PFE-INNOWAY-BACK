@@ -147,34 +147,43 @@ async generatePdf(
   language: string,
 ): Promise<Buffer> {
   const templateName =
-    language === 'fr'
-      ? 'delivery-note-fr.hbs'
-      : 'delivery-note-en.hbs';
+    language === "fr"
+      ? "delivery-note-fr.hbs"
+      : "delivery-note-en.hbs";
 
   const templatePath = path.join(
     process.cwd(),
-    'src/modules/delivery-note/templates',
+    "src/modules/delivery-note/templates",
     templateName,
   );
 
-  const templateHtml = fs.readFileSync(templatePath, 'utf8');
+  const templateHtml = fs.readFileSync(
+    templatePath,
+    "utf8",
+  );
 
   const template = handlebars.compile(templateHtml);
   const html = template(data);
 
+  console.log("NODE_ENV:", process.env.NODE_ENV);
+
   let browser;
 
-  if (process.env.NODE_ENV === 'PROD') {
-    const browser = await puppeteerCore.launch({
-  headless: true,
-  args: [
-    "--no-sandbox",
-    "--disable-setuid-sandbox",
-    "--disable-dev-shm-usage",
-  ],
-});
+  if (process.env.NODE_ENV === "production") {
+    browser = await puppeteer.launch({
+      executablePath: await chromium.executablePath(),
+
+      headless: true,
+
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+
+        ...chromium.args,
+      ],
+    });
   } else {
-    // Local
     browser = await puppeteer.launch({
       headless: true,
     });
@@ -184,11 +193,11 @@ async generatePdf(
     const page = await browser.newPage();
 
     await page.setContent(html, {
-      waitUntil: 'load',
+      waitUntil: "networkidle0",
     });
 
     const pdf = await page.pdf({
-      format: 'A4',
+      format: "A4",
       printBackground: true,
     });
 

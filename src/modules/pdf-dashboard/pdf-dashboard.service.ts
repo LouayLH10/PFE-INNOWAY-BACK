@@ -367,77 +367,64 @@ async generatePdf(
   data: any,
   language: string,
 ): Promise<Buffer> {
-
   const templateName =
-    language === 'fr'
-      ? 'dashboard-fr.hbs'
-      : 'dashboard-en.hbs';
+    language === "fr"
+      ? "dashboard-fr.hbs"
+      : "dashboard-en.hbs";
 
   const templatePath = path.join(
     process.cwd(),
-    'src/modules/pdf-dashboard/templates',
+    "src/modules/pdf-dashboard/templates",
     templateName,
   );
 
   const templateHtml = fs.readFileSync(
     templatePath,
-    'utf8',
+    "utf8",
   );
 
   const template = handlebars.compile(templateHtml);
-
   const html = template(data);
+
+  console.log("NODE_ENV:", process.env.NODE_ENV);
 
   let browser;
 
-  if (process.env.NODE_ENV === 'PROD') {
-
-    browser = await puppeteerCore.launch({
-
-      executablePath:
-        await Chromium.executablePath(),
-
-      args: [
-        ...Chromium.args,
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        "--disable-dev-shm-usage",
-      ],
+  if (process.env.NODE_ENV === "production") {
+    browser = await puppeteer.launch({
+      executablePath: await Chromium.executablePath(),
 
       headless: true,
 
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+
+        ...Chromium.args,
+      ],
     });
-
   } else {
-
     browser = await puppeteer.launch({
       headless: true,
     });
-
   }
 
   try {
-
     const page = await browser.newPage();
 
     await page.setContent(html, {
-       waitUntil: "networkidle0",
+      waitUntil: "networkidle0",
     });
 
     const pdf = await page.pdf({
-
-      format: 'A4',
-
+      format: "A4",
       printBackground: true,
-
     });
 
     return Buffer.from(pdf);
-
   } finally {
-
     await browser.close();
-
   }
 }
  async sendDashboardMail(
