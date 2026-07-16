@@ -165,7 +165,7 @@ async generatePdf(
   let browser;
 
   if (process.env.NODE_ENV === 'PROD') {
-    // Renderconst browser = await puppeteerCore.launch({
+    const browser = await puppeteerCore.launch({
   headless: true,
   args: [
     "--no-sandbox",
