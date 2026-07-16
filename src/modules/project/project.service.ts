@@ -196,7 +196,6 @@ async generatePdf(
   data: any,
   language: string,
 ): Promise<Buffer> {
-
   const templateName =
     language === "fr"
       ? "project-fr.hbs"
@@ -219,14 +218,17 @@ async generatePdf(
   let browser;
 
   if (process.env.NODE_ENV === "PROD") {
-    browser = await puppeteerCore.launch({
+    browser = await puppeteer.launch({
       executablePath: await chromium.executablePath(),
+
       args: [
         ...chromium.args,
         "--no-sandbox",
         "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
       ],
-      headless: true,
+
+      headless: "shell",
     });
   } else {
     browser = await puppeteer.launch({
